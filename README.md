@@ -1,46 +1,52 @@
 # Database Crocette - Ingegneria del Software B
 
-Mini sito locale per allenarsi con le domande a crocetta di Ingegneria del Software B.
+Mini applicazione locale per allenarsi con le domande a crocetta di Ingegneria del Software B.
 
-Il progetto usa:
+Il progetto include:
 
-- un backend Python/Flask che legge il file Excel con le domande;
-- una pagina web in `frontend/index.html`;
-- salvataggio locale dello storico in file JSON generati automaticamente.
+- un backend Python con Flask;
+- un frontend web in `frontend/index.html`;
+- il file Excel con le domande;
+- il salvataggio locale di storico e domande sbagliate in JSON generati automaticamente.
+
+## Cosa serve
+
+- Python 3.8 o superiore
+- il file Excel `doamnde ing B.xlsx` nella stessa cartella di `app.py`
 
 ## Avvio rapido
 
-Non aprire direttamente `frontend/index.html`: il sito ha bisogno del server Python.
+Non aprire direttamente `frontend/index.html`: il progetto funziona tramite server locale.
 
 ### Windows
 
-1. Installa Python 3.8 o superiore da <https://www.python.org/downloads/>.
-2. Durante l'installazione spunta "Add Python to PATH".
+1. Installa Python da <https://www.python.org/downloads/>.
+2. Durante l'installazione attiva `Add Python to PATH`.
 3. Fai doppio click su `avvia_windows.bat`.
-4. Il browser si apre su `http://localhost:5000`.
+4. Il browser si aprirà su `http://localhost:5000`.
 
 ### macOS / Linux
 
-1. Installa Python 3.8 o superiore.
-2. Apri il Terminale nella cartella del progetto.
+1. Installa Python 3.
+2. Apri il terminale nella cartella del progetto.
 3. Esegui:
 
 ```bash
 bash avvia_mac.sh
 ```
 
-4. Il browser si apre su `http://localhost:5000`.
+4. Il browser si aprirà su `http://localhost:5000`.
 
 ## Avvio manuale
 
-Se gli script non funzionano, apri un terminale nella cartella del progetto ed esegui:
+Se preferisci eseguire tutto a mano:
 
 ```bash
 python -m pip install -r requirements.txt
 python app.py
 ```
 
-Su macOS/Linux, se `python` non esiste:
+Se `python` non è disponibile, prova:
 
 ```bash
 python3 -m pip install -r requirements.txt
@@ -49,7 +55,14 @@ python3 app.py
 
 Poi apri `http://localhost:5000`.
 
-## Struttura
+## Come funziona
+
+1. Il backend legge le domande dal file Excel.
+2. Il frontend richiede una nuova sessione al server.
+3. Le risposte vengono inviate una alla volta.
+4. Alla fine il server calcola il punteggio e salva lo storico in locale.
+
+## File presenti nel progetto
 
 ```text
 DATABASE CROCETTE/
@@ -67,13 +80,25 @@ DATABASE CROCETTE/
 
 ## File generati automaticamente
 
-Questi file vengono creati durante l'uso e non vanno caricati su GitHub:
+Questi file vengono creati durante l'uso dell'applicazione e non vanno caricati su GitHub:
 
 - `database_test.json`
 - `domande_sbagliate.json`
 - `__pycache__/`
 
-Sono gia' esclusi in `.gitignore`.
+Sono già esclusi in `.gitignore`.
+
+## Come usarlo senza errori
+
+Se una persona scarica il progetto e segue queste istruzioni:
+
+1. ha Python installato;
+2. lascia `doamnde ing B.xlsx` nella cartella principale;
+3. installa le dipendenze con `requirements.txt`;
+4. avvia `app.py` oppure `avvia_windows.bat` / `avvia_mac.sh`;
+5. apre `http://localhost:5000`;
+
+allora può usare il quiz normalmente, rispondere alle domande, saltarle, vedere il risultato finale e consultare lo storico.
 
 ## Problemi comuni
 
@@ -81,20 +106,11 @@ Sono gia' esclusi in `.gitignore`.
 | --- | --- |
 | `python` non trovato | Installa Python e aggiungilo al PATH |
 | `ModuleNotFoundError` | Esegui `python -m pip install -r requirements.txt` |
-| La pagina non carica le domande | Controlla che il server sia acceso e apri `http://localhost:5000` |
-| File Excel non trovato | Lascia `doamnde ing B.xlsx` nella stessa cartella di `app.py` |
+| Il sito non carica le domande | Controlla che il server sia avviato e usa `http://localhost:5000` |
+| Il file Excel non viene trovato | Verifica che `doamnde ing B.xlsx` sia nella stessa cartella di `app.py` |
 | Porta 5000 occupata | Avvia con `PORT=5001 python app.py` e apri `http://localhost:5001` |
 
-## Note per GitHub
+## Nota importante
 
-Prima di pubblicare il repository, carica questi file:
-
-- codice Python;
-- cartella `frontend`;
-- file Excel delle domande;
-- `requirements.txt`;
-- script di avvio;
-- `README.md`;
-- `.gitignore`.
-
-Non caricare file generati o cache.
+Se il file Excel cambia nome o viene spostato, il progetto non riesce a leggere le domande.
+Quindi il nome e la posizione del file devono rimanere identici a quelli previsti dal codice.
