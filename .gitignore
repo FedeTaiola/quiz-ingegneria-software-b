@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Ambiente virtuale
+venv/
+.venv/
+env/
+.env/
+
+# Dati generati automaticamente (non da committare)
+database_test.json
+domande_sbagliate.json
+
+# File Excel delle domande — incluso nel repo
+# (rimuovi questa riga se NON vuoi includerlo)
+# doamnde ing B.xlsx
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
