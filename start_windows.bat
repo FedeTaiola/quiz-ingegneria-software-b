@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================
-REM avvia_windows.bat — Avvia il quiz (Windows)
+REM start_windows.bat — Avvia il quiz (Windows)
 REM ============================================================
 REM Fai doppio click su questo file per avviare il quiz.
 REM Il browser si aprira' automaticamente.

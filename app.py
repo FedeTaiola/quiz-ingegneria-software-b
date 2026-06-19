@@ -22,7 +22,7 @@ import uuid
 import time
 
 # Import delle funzioni core già scritte nel modulo principale
-from DATABASE_CROCETTE_INGE_SW_B import (
+from quiz_engine import (
     carica_domande,
     seleziona_domande,
     calcola_punteggio,

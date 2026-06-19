@@ -16,12 +16,12 @@ env/
 .env/
 
 # Dati generati automaticamente (non da committare)
-database_test.json
-domande_sbagliate.json
+quiz_history.json
+wrong_answers.json
 
 # File Excel delle domande — incluso nel repo
 # (rimuovi questa riga se NON vuoi includerlo)
-# doamnde ing B.xlsx
+# domande_ingegneria_software_b.xlsx
 
 # OS
 .DS_Store

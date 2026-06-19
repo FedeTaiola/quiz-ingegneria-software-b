@@ -1,9 +1,9 @@
 #!/bin/bash
 # ============================================================
-# avvia_mac.sh — Avvia il quiz (macOS / Linux)
+# start_mac.sh — Avvia il quiz (macOS / Linux)
 # ============================================================
 # Uso: apri il Terminale, vai nella cartella del progetto e
-#      esegui:  bash avvia_mac.sh
+#      esegui:  bash start_mac.sh
 # ============================================================
 
 cd "$(dirname "$0")"

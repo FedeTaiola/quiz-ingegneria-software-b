@@ -24,10 +24,10 @@ import pandas as pd
 # Costanti
 # ---------------------------------------------------------------------------
 SCRIPT_DIR         = os.path.dirname(os.path.abspath(__file__))
-EXCEL_NAME         = "doamnde ing B.xlsx"
+EXCEL_NAME         = "domande_ingegneria_software_b.xlsx"
 EXCEL_PATH         = os.path.join(SCRIPT_DIR, EXCEL_NAME)
-RESULTS_FILE       = os.path.join(SCRIPT_DIR, "database_test.json")
-WRONG_ANSWERS_FILE = os.path.join(SCRIPT_DIR, "domande_sbagliate.json")
+RESULTS_FILE       = os.path.join(SCRIPT_DIR, "quiz_history.json")
+WRONG_ANSWERS_FILE = os.path.join(SCRIPT_DIR, "wrong_answers.json")
 
 NUM_DOMANDE        = 34
 PUNTI_CORRETTA     = 1.0
