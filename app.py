@@ -309,6 +309,21 @@ def api_dashboard():
     })
 
 
+@app.route("/api/dashboard/reset", methods=["POST"])
+def api_dashboard_reset():
+    paths = [RESULTS_FILE, WRONG_ANSWERS_FILE, QUESTION_STATS_FILE]
+    removed = []
+    for path in paths:
+        if os.path.exists(path):
+            os.remove(path)
+            removed.append(os.path.basename(path))
+
+    return jsonify({
+        "ok": True,
+        "removed": removed,
+    })
+
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------

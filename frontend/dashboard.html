@@ -42,6 +42,33 @@
     .empty { color:var(--muted); padding:.7rem 0; }
     .toplinks { display:flex; gap:1rem; flex-wrap:wrap; }
     .linkbtn { text-decoration:none; background:var(--card2); border:1px solid var(--border); padding:.65rem .9rem; border-radius:10px; }
+    .dangerbtn {
+      border:1px solid rgba(248,113,113,.35);
+      background:rgba(248,113,113,.08);
+      color:var(--wrong);
+      cursor:pointer;
+      padding:.65rem .9rem;
+      border-radius:10px;
+      font-family:var(--font-ui);
+    }
+    .banner {
+      display:none;
+      margin:1rem 0 1.5rem;
+      padding:1rem 1.1rem;
+      border:1px solid rgba(248,113,113,.35);
+      background:rgba(248,113,113,.08);
+      border-radius:12px;
+      color:var(--text);
+    }
+    .banner.show { display:block; }
+    .banner strong { color:var(--wrong); }
+    .banner-actions { display:flex; gap:.75rem; margin-top:.9rem; flex-wrap:wrap; }
+    .confirmbtn, .cancelbtn {
+      padding:.6rem .9rem; border-radius:10px; border:1px solid var(--border);
+      cursor:pointer; font-family:var(--font-ui);
+    }
+    .confirmbtn { background:var(--wrong); color:#0f1117; border-color:transparent; }
+    .cancelbtn { background:var(--card2); color:var(--text); }
     @media (max-width: 900px) { .summary, .main { grid-template-columns:1fr 1fr; } .main { grid-template-columns:1fr; } }
     @media (max-width: 560px) { .summary { grid-template-columns:1fr 1fr; } .hero h1 { font-size:1.5rem; } .summary { grid-template-columns:1fr; } }
   </style>
@@ -56,6 +83,15 @@
       </div>
       <div class="toplinks">
         <a class="linkbtn" href="/">Torna al quiz</a>
+        <button class="dangerbtn" id="btn-reset">Cancella cronologia</button>
+      </div>
+    </div>
+
+    <div class="banner" id="reset-banner">
+      <strong>Attenzione:</strong> questa azione cancellerà lo storico dei quiz, le domande sbagliate e le statistiche delle domande.
+      <div class="banner-actions">
+        <button class="confirmbtn" id="btn-confirm-reset">Sì, cancella tutto</button>
+        <button class="cancelbtn" id="btn-cancel-reset">Annulla</button>
       </div>
     </div>
 
@@ -138,10 +174,30 @@
       renderWrong(data.wrong_answers || []);
     }
 
+    function showResetBanner() {
+      $('reset-banner').classList.add('show');
+    }
+
+    function hideResetBanner() {
+      $('reset-banner').classList.remove('show');
+    }
+
+    async function confirmReset() {
+      const res = await fetch('/api/dashboard/reset', { method: 'POST' });
+      const data = await res.json();
+      hideResetBanner();
+      await boot();
+      alert(`Cronologia azzerata. Rimossi: ${(data.removed || []).join(', ') || 'nessun file trovato'}.`);
+    }
+
     boot().catch(err => {
       $('summary').innerHTML = '<div class="panel">Errore caricamento dashboard.</div>';
       $('history').innerHTML = `<div class="empty">${err.message}</div>`;
     });
+
+    $('btn-reset').addEventListener('click', showResetBanner);
+    $('btn-cancel-reset').addEventListener('click', hideResetBanner);
+    $('btn-confirm-reset').addEventListener('click', confirmReset);
   </script>
 </body>
 </html>
