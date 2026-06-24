@@ -20,6 +20,7 @@ from flask import Flask, jsonify, request, send_from_directory
 import os
 import uuid
 import time
+from collections import Counter
 
 # Import delle funzioni core già scritte nel modulo principale
 from quiz_engine import (
@@ -33,6 +34,7 @@ from quiz_engine import (
     NUM_DOMANDE,
     RESULTS_FILE,
     WRONG_ANSWERS_FILE,
+    QUESTION_STATS_FILE,
     SCRIPT_DIR,
 )
 
@@ -55,6 +57,11 @@ sessioni: dict = {}
 @app.route("/")
 def index():
     return send_from_directory(app.static_folder, "index.html")
+
+
+@app.route("/dashboard")
+def dashboard():
+    return send_from_directory(app.static_folder, "dashboard.html")
 
 
 # ---------------------------------------------------------------------------
@@ -231,6 +238,75 @@ def storico():
             except json.JSONDecodeError:
                 storico_data = []
     return jsonify(storico_data)
+
+
+@app.route("/api/dashboard", methods=["GET"])
+def api_dashboard():
+    storico_data = []
+    wrong_data = []
+    question_stats = {}
+
+    if os.path.exists(RESULTS_FILE):
+        with open(RESULTS_FILE, "r", encoding="utf-8") as f:
+            try:
+                storico_data = json.load(f)
+            except json.JSONDecodeError:
+                storico_data = []
+
+    if os.path.exists(WRONG_ANSWERS_FILE):
+        with open(WRONG_ANSWERS_FILE, "r", encoding="utf-8") as f:
+            try:
+                wrong_data = json.load(f)
+            except json.JSONDecodeError:
+                wrong_data = []
+
+    stats = {}
+    if os.path.exists(QUESTION_STATS_FILE):
+        try:
+            with open(QUESTION_STATS_FILE, "r", encoding="utf-8") as f:
+                stats = json.load(f)
+        except Exception:
+            stats = {}
+
+    total_quiz = len(storico_data)
+    avg_score = round(sum(x.get("punteggio", 0) for x in storico_data) / total_quiz, 2) if total_quiz else 0
+    best_score = max((x.get("punteggio", 0) for x in storico_data), default=0)
+    last_score = storico_data[-1]["punteggio"] if storico_data else 0
+
+    wrong_counter = Counter()
+    wrong_question_details = {}
+    for item in wrong_data:
+        domanda = item.get("domanda", "")
+        if domanda:
+            wrong_counter[domanda] += 1
+            wrong_question_details.setdefault(domanda, {
+                "domanda": domanda,
+                "count": 0,
+                "last_seen": item.get("data"),
+                "risposta_corretta": item.get("risposta_corretta"),
+                "risposta_data": item.get("risposta_data"),
+            })
+            wrong_question_details[domanda]["count"] += 1
+            wrong_question_details[domanda]["last_seen"] = item.get("data")
+
+    return jsonify({
+        "summary": {
+            "total_quiz": total_quiz,
+            "average_score": avg_score,
+            "best_score": best_score,
+            "last_score": last_score,
+        },
+        "history": storico_data[::-1],
+        "wrong_answers": sorted(
+            wrong_question_details.values(),
+            key=lambda x: (-x["count"], x["domanda"])
+        ),
+        "question_stats": stats,
+        "totals": {
+            "wrong_answers_count": len(wrong_data),
+            "unique_wrong_questions": len(wrong_question_details),
+        }
+    })
 
 
 # ---------------------------------------------------------------------------

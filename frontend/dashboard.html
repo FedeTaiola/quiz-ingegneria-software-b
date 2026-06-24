@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Studente - Database Crocette</title>
+  <style>
+    :root {
+      --bg:#0f1117; --card:#1c1f2e; --card2:#252838; --border:#2e3147;
+      --accent:#a3e635; --correct:#4ade80; --wrong:#f87171; --muted:#8b90a8;
+      --text:#e8eaf0; --radius:14px; --font-ui: Inter, ui-sans-serif, system-ui, sans-serif;
+      --font-title: "Segoe UI", Inter, ui-sans-serif, system-ui, sans-serif;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:var(--font-ui); background:var(--bg); color:var(--text); }
+    a { color: inherit; }
+    .wrap { max-width:1100px; margin:0 auto; padding:2rem 1rem 3rem; }
+    .hero { display:flex; justify-content:space-between; gap:1rem; align-items:end; flex-wrap:wrap; margin-bottom:1.5rem; }
+    .hero h1 { margin:0; font-family:var(--font-title); font-size:2rem; }
+    .hero p { margin:.35rem 0 0; color:var(--muted); }
+    .pill { display:inline-block; padding:.35rem .7rem; border-radius:999px; background:rgba(163,230,53,.12); color:var(--accent); font-size:.85rem; font-weight:700; }
+    .grid { display:grid; gap:1rem; }
+    .summary { grid-template-columns:repeat(4,minmax(0,1fr)); margin-bottom:1rem; }
+    .panel { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1rem; }
+    .panel h2 { margin:0 0 .9rem; font-family:var(--font-title); font-size:1rem; }
+    .stat { font-family:var(--font-title); font-size:1.8rem; font-weight:700; }
+    .label { color:var(--muted); font-size:.85rem; margin-top:.15rem; }
+    .main { grid-template-columns:1.4fr 1fr; align-items:start; }
+    .list { display:flex; flex-direction:column; gap:.75rem; }
+    .item { padding:.9rem 1rem; border-radius:12px; background:var(--card2); border:1px solid var(--border); }
+    .item .top { display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; align-items:center; }
+    .item .title { font-weight:700; }
+    .item .meta { color:var(--muted); font-size:.88rem; }
+    .score { font-family:var(--font-title); font-weight:700; color:var(--accent); }
+    .badges { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.6rem; }
+    .badge { font-size:.78rem; padding:.25rem .55rem; border-radius:999px; background:rgba(255,255,255,.06); color:var(--text); }
+    .badge.bad { background:rgba(248,113,113,.12); color:var(--wrong); }
+    .badge.good { background:rgba(74,222,128,.12); color:var(--correct); }
+    .table { width:100%; border-collapse:collapse; }
+    .table th, .table td { text-align:left; padding:.75rem .5rem; border-bottom:1px solid var(--border); font-size:.92rem; }
+    .table th { color:var(--muted); font-weight:600; }
+    .empty { color:var(--muted); padding:.7rem 0; }
+    .toplinks { display:flex; gap:1rem; flex-wrap:wrap; }
+    .linkbtn { text-decoration:none; background:var(--card2); border:1px solid var(--border); padding:.65rem .9rem; border-radius:10px; }
+    @media (max-width: 900px) { .summary, .main { grid-template-columns:1fr 1fr; } .main { grid-template-columns:1fr; } }
+    @media (max-width: 560px) { .summary { grid-template-columns:1fr 1fr; } .hero h1 { font-size:1.5rem; } .summary { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <span class="pill">Dashboard studente</span>
+        <h1>Situazione complessiva del quiz</h1>
+        <p>Storico punteggi, errori e domande sbagliate più spesso.</p>
+      </div>
+      <div class="toplinks">
+        <a class="linkbtn" href="/">Torna al quiz</a>
+      </div>
+    </div>
+
+    <div class="grid summary" id="summary"></div>
+
+    <div class="grid main">
+      <section class="panel">
+        <h2>Storico quiz</h2>
+        <div id="history"></div>
+      </section>
+      <section class="panel">
+        <h2>Domande più sbagliate</h2>
+        <div id="wrong"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+    function statCard(label, value) {
+      return `<div class="panel"><div class="stat">${value}</div><div class="label">${label}</div></div>`;
+    }
+
+    function renderSummary(data) {
+      const s = data.summary;
+      $('summary').innerHTML = [
+        statCard('Quiz fatti', s.total_quiz),
+        statCard('Media punteggio', s.average_score.toFixed(2)),
+        statCard('Miglior punteggio', s.best_score.toFixed(2)),
+        statCard('Ultimo punteggio', s.last_score.toFixed(2)),
+      ].join('');
+    }
+
+    function renderHistory(items) {
+      if (!items.length) {
+        $('history').innerHTML = '<div class="empty">Nessun quiz ancora salvato.</div>';
+        return;
+      }
+      $('history').innerHTML = `
+        <table class="table">
+          <thead><tr><th>Data</th><th>Punteggio</th><th>Corrette</th><th>Sbagliate</th><th>Saltate</th></tr></thead>
+          <tbody>
+            ${items.map(x => `
+              <tr>
+                <td>${x.data || '-'}</td>
+                <td class="score">${Number(x.punteggio || 0).toFixed(2)}</td>
+                <td>${x.corrette ?? 0}</td>
+                <td>${x.sbagliate ?? 0}</td>
+                <td>${x.saltate ?? 0}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    function renderWrong(items) {
+      if (!items.length) {
+        $('wrong').innerHTML = '<div class="empty">Nessuna domanda sbagliata registrata ancora.</div>';
+        return;
+      }
+      $('wrong').innerHTML = items.map(x => `
+        <div class="item">
+          <div class="top">
+            <div class="title">${x.domanda}</div>
+            <div class="meta">Sbagliata ${x.count} volte</div>
+          </div>
+          <div class="badges">
+            <span class="badge bad">Ultima risposta: ${x.risposta_data || '-'}</span>
+            <span class="badge good">Corretta: ${x.risposta_corretta || '-'}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function boot() {
+      const res = await fetch('/api/dashboard');
+      const data = await res.json();
+      renderSummary(data);
+      renderHistory(data.history || []);
+      renderWrong(data.wrong_answers || []);
+    }
+
+    boot().catch(err => {
+      $('summary').innerHTML = '<div class="panel">Errore caricamento dashboard.</div>';
+      $('history').innerHTML = `<div class="empty">${err.message}</div>`;
+    });
+  </script>
+</body>
+</html>

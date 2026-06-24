@@ -8,6 +8,7 @@ Il progetto include:
 - un frontend web in `frontend/index.html`;
 - il file Excel con le domande;
 - il salvataggio locale di storico e domande sbagliate in JSON generati automaticamente.
+- una dashboard studente con storico quiz ed errori più frequenti.
 
 ## Cosa serve
 
@@ -64,6 +65,7 @@ Poi apri `http://localhost:5000`.
 5. Il backend favorisce le domande mai viste o viste meno spesso.
 6. Le risposte vengono inviate una alla volta.
 7. Alla fine il server calcola il punteggio e salva lo storico in locale.
+8. La dashboard è disponibile su `http://localhost:5000/dashboard`.
 
 ## File presenti nel progetto
 
@@ -100,7 +102,7 @@ Se una persona scarica il progetto e segue queste istruzioni:
 2. lascia `domande_ingegneria_software_b.xlsx` nella cartella principale;
 3. installa le dipendenze con `requirements.txt`;
 4. avvia `app.py` oppure `start_windows.bat` / `start_mac.sh`;
-5. apre `http://localhost:5000`;
+5. apre `http://localhost:5000` per il quiz oppure `http://localhost:5000/dashboard` per la dashboard;
 
 allora può usare il quiz normalmente, rispondere alle domande, saltarle, vedere il risultato finale e consultare lo storico.
 
@@ -111,6 +113,7 @@ allora può usare il quiz normalmente, rispondere alle domande, saltarle, vedere
 | `python` non trovato | Installa Python e aggiungilo al PATH |
 | `ModuleNotFoundError` | Esegui `python -m pip install -r requirements.txt` |
 | Il sito non carica le domande | Controlla che il server sia avviato e usa `http://localhost:5000` |
+| La dashboard non si apre | Usa `http://localhost:5000/dashboard` con il server avviato |
 | Il file Excel non viene trovato | Verifica che `domande_ingegneria_software_b.xlsx` sia nella stessa cartella di `app.py` |
 | Le opzioni sembrano sempre uguali | Riavvia un nuovo quiz: l'ordine delle opzioni viene rimescolato a ogni sessione |
 | Porta 5000 occupata | Avvia con `PORT=5001 python app.py` e apri `http://localhost:5001` |
