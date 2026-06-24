@@ -59,8 +59,11 @@ Poi apri `http://localhost:5000`.
 
 1. Il backend legge le domande dal file Excel.
 2. Il frontend richiede una nuova sessione al server.
-3. Le risposte vengono inviate una alla volta.
-4. Alla fine il server calcola il punteggio e salva lo storico in locale.
+3. Ogni sessione mostra 9 domande.
+4. L'ordine delle opzioni viene mescolato a ogni quiz, così non si imparano le lettere a memoria.
+5. Il backend favorisce le domande mai viste o viste meno spesso.
+6. Le risposte vengono inviate una alla volta.
+7. Alla fine il server calcola il punteggio e salva lo storico in locale.
 
 ## File presenti nel progetto
 
@@ -84,6 +87,7 @@ Questi file vengono creati durante l'uso dell'applicazione e non vanno caricati 
 
 - `quiz_history.json`
 - `wrong_answers.json`
+- `question_stats.json`
 - `__pycache__/`
 
 Sono già esclusi in `.gitignore`.
@@ -108,6 +112,7 @@ allora può usare il quiz normalmente, rispondere alle domande, saltarle, vedere
 | `ModuleNotFoundError` | Esegui `python -m pip install -r requirements.txt` |
 | Il sito non carica le domande | Controlla che il server sia avviato e usa `http://localhost:5000` |
 | Il file Excel non viene trovato | Verifica che `domande_ingegneria_software_b.xlsx` sia nella stessa cartella di `app.py` |
+| Le opzioni sembrano sempre uguali | Riavvia un nuovo quiz: l'ordine delle opzioni viene rimescolato a ogni sessione |
 | Porta 5000 occupata | Avvia con `PORT=5001 python app.py` e apri `http://localhost:5001` |
 
 ## Nota importante

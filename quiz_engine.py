@@ -17,6 +17,8 @@ import os
 import sys
 import time
 import json
+import hashlib
+import random
 
 import pandas as pd
 
@@ -28,8 +30,9 @@ EXCEL_NAME         = "domande_ingegneria_software_b.xlsx"
 EXCEL_PATH         = os.path.join(SCRIPT_DIR, EXCEL_NAME)
 RESULTS_FILE       = os.path.join(SCRIPT_DIR, "quiz_history.json")
 WRONG_ANSWERS_FILE = os.path.join(SCRIPT_DIR, "wrong_answers.json")
+QUESTION_STATS_FILE = os.path.join(SCRIPT_DIR, "question_stats.json")
 
-NUM_DOMANDE        = 34
+NUM_DOMANDE        = 9
 PUNTI_CORRETTA     = 1.0
 PENALITA_SBAGLIATA = 0.5
 
@@ -84,6 +87,7 @@ def carica_domande(excel_path: str = EXCEL_PATH) -> list[dict]:
             continue
 
         domande.append({
+            "id":       calcola_id_domanda(testo_domanda, risposte_dict, corretta),
             "domanda":  testo_domanda,
             "risposte": risposte_dict,
             "corretta": corretta,
@@ -95,13 +99,119 @@ def carica_domande(excel_path: str = EXCEL_PATH) -> list[dict]:
     return domande
 
 
+def calcola_id_domanda(domanda: str, risposte: dict[str, str], corretta: str) -> str:
+    """Crea un identificatore stabile per una domanda."""
+    payload = {
+        "domanda": domanda.strip(),
+        "risposte": {k: risposte[k] for k in sorted(risposte)},
+        "corretta": corretta.strip().lower(),
+    }
+    raw = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha1(raw.encode("utf-8")).hexdigest()
+
+
+def carica_statistiche_domande() -> dict[str, int]:
+    """Restituisce un conteggio di quante volte ogni domanda è stata mostrata."""
+    if not os.path.exists(QUESTION_STATS_FILE):
+        return {}
+
+    with open(QUESTION_STATS_FILE, "r", encoding="utf-8") as f:
+        try:
+            data = json.load(f)
+        except json.JSONDecodeError:
+            return {}
+
+    if isinstance(data, dict):
+        return {str(k): int(v) for k, v in data.items()}
+
+    return {}
+
+
+def salva_statistiche_domande(stats: dict[str, int]) -> None:
+    with open(QUESTION_STATS_FILE, "w", encoding="utf-8") as f:
+        json.dump(stats, f, ensure_ascii=False, indent=2)
+
+
+def registra_domande_mostrate(domande: list[dict]) -> None:
+    """Incrementa il contatore di esposizione per le domande mostrate."""
+    stats = carica_statistiche_domande()
+    for domanda in domande:
+        domanda_id = domanda["id"]
+        stats[domanda_id] = stats.get(domanda_id, 0) + 1
+    salva_statistiche_domande(stats)
+
+
+def mescola_risposte(domanda: dict) -> dict:
+    """Restituisce la domanda con risposte e lettera corretta rimescolate."""
+    opzioni = list(domanda["risposte"].items())
+    random.shuffle(opzioni)
+
+    lettere = ["a", "b", "c", "d", "e", "f"]
+    nuove_risposte: dict[str, str] = {}
+    nuova_corretta = None
+
+    for idx, (vecchia_lettera, testo) in enumerate(opzioni):
+        lettera = lettere[idx]
+        nuove_risposte[lettera] = testo
+        if vecchia_lettera == domanda["corretta"]:
+            nuova_corretta = lettera
+
+    if nuova_corretta is None:
+        nuova_corretta = domanda["corretta"]
+
+    return {
+        **domanda,
+        "risposte": nuove_risposte,
+        "corretta": nuova_corretta,
+    }
+
+
+def _pesi_domande(domande: list[dict], stats: dict[str, int]) -> list[float]:
+    pesi = []
+    for domanda in domande:
+        conteggio = stats.get(domanda["id"], 0)
+        pesi.append(1.0 / (conteggio + 1))
+    return pesi
+
+
+def seleziona_domande_pesate(domande: list[dict], n: int) -> list[dict]:
+    """
+    Selezione senza duplicati:
+    - priorità alle domande mai viste;
+    - poi alle meno frequenti, con peso inverso al numero di esposizioni.
+    """
+    n = min(n, len(domande))
+    if n <= 0:
+        return []
+
+    stats = carica_statistiche_domande()
+    unseen = [d for d in domande if stats.get(d["id"], 0) == 0]
+    selected: list[dict] = []
+
+    if unseen:
+        take = min(n, len(unseen))
+        selected.extend(random.sample(unseen, take))
+
+    remaining = n - len(selected)
+    if remaining <= 0:
+        return selected
+
+    pool = [d for d in domande if d not in selected]
+    while pool and remaining > 0:
+        weights = _pesi_domande(pool, stats)
+        chosen = random.choices(pool, weights=weights, k=1)[0]
+        selected.append(chosen)
+        pool.remove(chosen)
+        remaining -= 1
+
+    return selected
+
+
 def seleziona_domande(domande: list[dict], n: int = NUM_DOMANDE) -> list[dict]:
     """
-    Restituisce n domande in ordine casuale (o meno se il totale è inferiore a n).
+    Restituisce n domande senza duplicati, privilegiando quelle meno viste.
     """
-    import random
-    n = min(n, len(domande))
-    return random.sample(domande, n)
+    return seleziona_domande_pesate(domande, n)
 
 
 def calcola_punteggio(risposte_utente: list[dict]) -> dict:
@@ -219,6 +329,8 @@ def run_quiz_terminale() -> None:
         sys.exit(1)
 
     domande = seleziona_domande(tutte_le_domande)
+    domande = [mescola_risposte(d) for d in domande]
+    registra_domande_mostrate(domande)
     n       = len(domande)
 
     print(f"\n\nInizio Quiz — {n} domande\n")

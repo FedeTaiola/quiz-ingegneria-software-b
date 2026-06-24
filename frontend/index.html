@@ -329,7 +329,7 @@
       <div class="rule"><span class="rule-icon">✅</span><span>Risposta corretta → <strong>+1 punto</strong></span></div>
       <div class="rule"><span class="rule-icon">❌</span><span>Risposta sbagliata → <strong>−0.5 punti</strong></span></div>
       <div class="rule"><span class="rule-icon">⏭️</span><span>Salta → <strong>0 punti</strong></span></div>
-      <div class="rule"><span class="rule-icon">📋</span><span><strong id="intro-n">34</strong> domande casuali per sessione</span></div>
+      <div class="rule"><span class="rule-icon">📋</span><span><strong id="intro-n">9</strong> domande casuali per sessione</span></div>
     </div>
     <button class="btn-primary" id="btn-start">Inizia il quiz →</button>
   </div>
@@ -338,7 +338,7 @@
 <!-- ═══════════════ SCREEN: QUIZ ═══════════════ -->
 <div id="screen-quiz" class="screen">
   <div id="quiz-header">
-    <div id="q-counter">Domanda <span id="q-current">1</span> / <span id="q-total">34</span></div>
+    <div id="q-counter">Domanda <span id="q-current">1</span> / <span id="q-total">9</span></div>
     <div id="q-score-live">Punteggio: 0.0</div>
   </div>
   <div id="quiz-card">
@@ -463,7 +463,11 @@ function renderDomanda() {
   const container = $('options-container');
   container.innerHTML = '';
 
-  Object.entries(d.risposte).forEach(([lettera, testo]) => {
+  const opzioni = Array.isArray(d.opzioni)
+    ? d.opzioni
+    : Object.entries(d.risposte).map(([lettera, testo]) => ({ lettera, testo }));
+
+  opzioni.forEach(({ lettera, testo }) => {
     const btn = document.createElement('button');
     btn.className = 'opt-btn';
     btn.dataset.lettera = lettera;

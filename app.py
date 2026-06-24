@@ -25,6 +25,8 @@ import time
 from quiz_engine import (
     carica_domande,
     seleziona_domande,
+    mescola_risposte,
+    registra_domande_mostrate,
     calcola_punteggio,
     salva_risultati,
     salva_domande_sbagliate,
@@ -61,7 +63,7 @@ def index():
 @app.route("/api/sessione/avvia", methods=["POST"])
 def avvia_sessione():
     """
-    Body JSON opzionale: { "num_domande": 34 }
+    Body JSON opzionale: { "num_domande": 9 }
     Risposta: { "session_id": "...", "domande": [...], "totale": N }
     """
     body = request.get_json(silent=True) or {}
@@ -75,19 +77,27 @@ def avvia_sessione():
     domande = seleziona_domande(tutte, n)
     session_id = str(uuid.uuid4())
 
+    domande_sessione = [mescola_risposte(d) for d in domande]
+
     sessioni[session_id] = {
-        "domande":        domande,
+        "domande":        domande_sessione,
         "risposte_utente": [],   # { domanda, risposte, corretta, data }
         "start_time":     time.time(),
     }
 
+    registra_domande_mostrate(domande)
+
     # Serializza le domande per il client (non esporre la risposta corretta)
     domande_client = []
-    for i, d in enumerate(domande):
+    for i, d in enumerate(domande_sessione):
         domande_client.append({
             "index":    i,
             "domanda":  d["domanda"],
-            "risposte": d["risposte"],   # { 'a': '...', 'b': '...', ... }
+            "risposte": d["risposte"],   # legacy payload
+            "opzioni": [
+                {"lettera": lettera, "testo": testo}
+                for lettera, testo in d["risposte"].items()
+            ],
         })
 
     return jsonify({

@@ -18,6 +18,7 @@ env/
 # Dati generati automaticamente (non da committare)
 quiz_history.json
 wrong_answers.json
+question_stats.json
 
 # File Excel delle domande — incluso nel repo
 # (rimuovi questa riga se NON vuoi includerlo)
